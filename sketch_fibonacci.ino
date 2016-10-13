@@ -32,8 +32,34 @@ enum CONTAINCE_VALUE {
 void setup() {
   Serial.begin(9600);
   while (!Serial) ; // wait for serial
+  
+  tmElements_t tm;
+  if (!RTC.read(tm)) {
+    if (RTC.chipPresent()) {
+      Serial.println("need the SetTime");
+      
+      getTime(__TIME__, tm);
+      if (RTC.write(tm)) {
+        Serial.println("set compile time");
+      } else {
+        Serial.println("set time error");
+      }
+    } else {
+      Serial.println("DS1307 read error!  Please check the circuitry.");
+    }
+  }
 
   FastLED.addLeds<WS2811, DATA_PIN>(colorLeds, NUM_LEDS);
+//
+//  TimeElements te;
+//  te.Second = 0;
+//  te.Minute = 56;
+//  te.Hour = 17;
+//  te.Day = 12;
+//  te.Month = 10;
+//  time_t timeVal = makeTime(te);
+//  RTC.set(timeVal);
+//  setTime(timeVal);
 }
 
 void loop() {
@@ -224,24 +250,31 @@ void setColorLed(CONTAINCE_VALUE leds[]) {
     switch (leds[type]) {
     case CV_NONE:
       colorLeds[j] = CRGB(0,0,0);
-      Serial.println("none");
       break;
     case CV_MINUTE:
       colorLeds[j] = CRGB(255,0,0);
-      Serial.println("m");
       break;
    case CV_HOUR:
       colorLeds[j] = CRGB(0,255,0);
-      Serial.println("h");
       break;
     case CV_HOUR_WITH_MINUTE:
       colorLeds[j] = CRGB(0,0,255);
-      Serial.println("mh");
       break;
     default:
       colorLeds[j] = CRGB(0,0,0);
-      Serial.println("d");
     }
    }
 }
+
+bool getTime(const char *str, tmElements_t &tm)
+{
+  int Hour, Min, Sec;
+
+  if (sscanf(str, "%d:%d:%d", &Hour, &Min, &Sec) != 3) return false;
+  tm.Hour = Hour;
+  tm.Minute = Min;
+  tm.Second = Sec;
+  return true;
+}
+
 
