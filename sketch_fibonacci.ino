@@ -5,6 +5,10 @@
 
 #define NUM_LEDS 9
 #define DATA_PIN 2
+#define BTN_MODE 3
+#define BTN_SET 4
+#define LED1 5
+#define LED2 6
 
 CRGB colorLeds[NUM_LEDS];
 
@@ -14,6 +18,13 @@ enum SEQUENCE_ELEMENT {
   SE_THREE = 2,
   SE_FOUR = 3,
   SE_FIVE = 4  
+};
+
+enum BUTTON_MODE {
+  BM_LIGHT = 0,
+  BM_HOUR = 1,
+  BM_MINUTE = 2,
+  BM_SCHEME = 3
 };
 
 SEQUENCE_ELEMENT typeLeds[NUM_LEDS] {SE_FIRST, 
@@ -29,11 +40,33 @@ enum CONTAINCE_VALUE {
   CV_HOUR_WITH_MINUTE
 };
 
+BUTTON_MODE gMode;
+
 void setup() {
   Serial.begin(9600);
   while (!Serial) ; // wait for serial
 
+  gMode = BM_LIGHT;
+  
+  tmElements_t tm;
+  if (!RTC.read(tm)) {
+    if (RTC.chipPresent()) {
+      Serial.println("need the SetTime");
+      
+      getTime(__TIME__, tm);
+      if (RTC.write(tm)) {
+        Serial.println("set compile time");
+      } else {
+        Serial.println("set time error");
+      }
+    } else {
+      Serial.println("DS1307 read error!  Please check the circuitry.");
+    }
+  }
+
   FastLED.addLeds<WS2811, DATA_PIN>(colorLeds, NUM_LEDS);
+
+  pinMode(BTN_MODE, INPUT);
 }
 
 void loop() {
@@ -41,7 +74,24 @@ void loop() {
   tmElements_t tm = getTime();
   time2console(tm);
   timeToLeds(tm.Hour, tm.Minute);
-  delay(1000);
+
+  int buttonState1 = digitalRead(BTN_MODE);
+  if (buttonState1 == HIGH) { 
+    modeUp();
+  }
+
+  ledMode();
+
+  int buttonState2 = digitalRead(BTN_MODE);
+  if (buttonState2 == HIGH) { 
+    Serial.println("button on");
+    delay(500);
+  }
+  else {
+    Serial.println("button off");
+  }
+  
+  delay(100);
 }
 
 //read time
@@ -49,7 +99,7 @@ tmElements_t getTime() {
   tmElements_t tm;
 
   if (RTC.read(tm)) {
-    Serial.println("read time complete");
+    //Serial.println("read time complete");
   } else {
     if (RTC.chipPresent()) {
       Serial.println("time not initialize");
@@ -63,13 +113,33 @@ tmElements_t getTime() {
   return tm;
 }
 
+void modeUp()
+{
+  switch(gMode) {
+    case BM_LIGHT:
+      gMode = BM_HOUR;
+      break;
+    case BM_HOUR:
+      gMode = BM_MINUTE;
+      break;
+    case BM_MINUTE:
+      gMode = BM_SCHEME;    
+      break;
+    case BM_SCHEME:
+      gMode = BM_LIGHT;       
+      break;    
+    default:
+      gMode = BM_LIGHT;
+  }
+}
+
 void time2console(const tmElements_t &tm) {
-  print2digits(tm.Hour);
-  Serial.write(':');
-  print2digits(tm.Minute);
-  Serial.write(':');
-  print2digits(tm.Second);
-  Serial.println();
+//  print2digits(tm.Hour);
+//  Serial.write(':');
+//  print2digits(tm.Minute);
+//  Serial.write(':');
+//  print2digits(tm.Second);
+//  Serial.println();
 }
 
 void print2digits(const int number) {
@@ -224,24 +294,55 @@ void setColorLed(CONTAINCE_VALUE leds[]) {
     switch (leds[type]) {
     case CV_NONE:
       colorLeds[j] = CRGB(0,0,0);
-      Serial.println("none");
       break;
     case CV_MINUTE:
       colorLeds[j] = CRGB(255,0,0);
-      Serial.println("m");
       break;
    case CV_HOUR:
       colorLeds[j] = CRGB(0,255,0);
-      Serial.println("h");
       break;
     case CV_HOUR_WITH_MINUTE:
       colorLeds[j] = CRGB(0,0,255);
-      Serial.println("mh");
       break;
     default:
       colorLeds[j] = CRGB(0,0,0);
-      Serial.println("d");
     }
    }
+}
+
+bool getTime(const char *str, tmElements_t &tm)
+{
+  int Hour, Min, Sec;
+
+  if (sscanf(str, "%d:%d:%d", &Hour, &Min, &Sec) != 3) return false;
+  tm.Hour = Hour;
+  tm.Minute = Min;
+  tm.Second = Sec;
+  return true;
+}
+
+void ledMode()
+{
+  switch(gMode) {
+    case BM_LIGHT:
+      digitalWrite(LED1, LOW);
+      digitalWrite(LED2, LOW);
+      break;
+    case BM_HOUR:
+      digitalWrite(LED1, HIGH);
+      digitalWrite(LED2, LOW);
+      break;
+    case BM_MINUTE:
+      digitalWrite(LED1, LOW);
+      digitalWrite(LED2, HIGH);    
+      break;
+    case BM_SCHEME:
+      digitalWrite(LED1, HIGH);
+      digitalWrite(LED2, HIGH);     
+      break;    
+    default:
+      digitalWrite(LED1, LOW);
+      digitalWrite(LED2, LOW);
+  }
 }
 
