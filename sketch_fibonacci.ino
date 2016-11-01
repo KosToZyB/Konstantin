@@ -74,7 +74,7 @@ void setup() {
 }
 
 void loop() {
-  FastLED.show(); 
+  FastLED.show();
   tmElements_t tm = getTime();
   time2console(tm);
   timeToLeds(tm.Hour, tm.Minute);
@@ -89,7 +89,7 @@ void loop() {
 
   int btnSet = digitalRead(BTN_SET);
   if (btnSet == HIGH) {
-	  setUp(gMode);
+    setUp(gMode);
     delay(500);
   }
 
@@ -136,12 +136,12 @@ void modeUp()
 }
 
 void time2console(const tmElements_t &tm) {
-  //  print2digits(tm.Hour);
-  //  Serial.write(':');
-  //  print2digits(tm.Minute);
-  //  Serial.write(':');
-  //  print2digits(tm.Second);
-  //  Serial.println();
+  print2digits(tm.Hour);
+  Serial.write(':');
+  print2digits(tm.Minute);
+  Serial.write(':');
+  print2digits(tm.Second);
+  Serial.println();
 }
 
 void print2digits(const int number) {
@@ -368,17 +368,17 @@ void setUp(const BUTTON_MODE &mode) {
 }
 
 void lightUp() {
-	gLightLed = !gLightLed;
+  gLightLed = !gLightLed;
 }
 
 void hourUp() {
-	
+
 }
 
 void minuteUp() {
-	
+
 }
 
 void schemeUp() {
-	
+
 }
