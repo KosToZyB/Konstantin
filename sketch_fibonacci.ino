@@ -300,13 +300,13 @@ void setColorLed(CONTAINCE_VALUE leds[]) {
         colorLeds[j] = CRGB(0, 0, 0);
         break;
       case CV_MINUTE:
-        colorLeds[j] = CRGB(255, 0, 0);
+        colorLeds[j] = CRGB(0, 0, 255);
         break;
       case CV_HOUR:
-        colorLeds[j] = CRGB(0, 255, 0);
+        colorLeds[j] = CRGB(255, 0, 0);
         break;
       case CV_HOUR_WITH_MINUTE:
-        colorLeds[j] = CRGB(0, 0, 255);
+        colorLeds[j] = CRGB(0, 255, 0);
         break;
       default:
         colorLeds[j] = CRGB(0, 0, 0);
@@ -372,11 +372,31 @@ void lightUp() {
 }
 
 void hourUp() {
-
+  tmElements_t tm;
+  if (RTC.read(tm)) {
+    tm.Hour++;
+    if (tm.Hour == 24) {
+      tm.Hour = 1;
+    }
+    RTC.write(tm);
+  } else {
+    Serial.print("Can't read time");
+  }
 }
 
 void minuteUp() {
-
+  tmElements_t tm;
+  if (RTC.read(tm)) {
+    tm.Minute += 5;
+    tm.Minute = tm.Minute - (tm.Minute % 5);
+    
+    if (tm.Minute >= 60) {
+      tm.Minute = 0;
+    }
+    RTC.write(tm);
+  } else {
+    Serial.print("Can't read time");
+  }
 }
 
 void schemeUp() {
