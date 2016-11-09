@@ -264,13 +264,6 @@ void minuteToLeds(uint8_t minute, CONTAINCE_VALUE leds[]) {
       setMinuteToElement(leds[3]);
       setMinuteToElement(leds[4]);
       break;
-    case 0: // 12
-      setMinuteToElement(leds[0]);
-      setMinuteToElement(leds[1]);
-      setMinuteToElement(leds[2]);
-      setMinuteToElement(leds[3]);
-      setMinuteToElement(leds[4]);
-      break;
     default:
       break;
   }
