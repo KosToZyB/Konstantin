@@ -44,6 +44,7 @@ enum CONTAINCE_VALUE {
 BUTTON_MODE gMode;
 
 bool gLightLed;
+int gBright;
 
 void setup() {
   Serial.begin(9600);
@@ -78,6 +79,7 @@ void loop() {
   tmElements_t tm = getTime();
   time2console(tm);
   timeToLeds(tm.Hour, tm.Minute);
+  autoLight(tm.Hour, tm.Minute);
 
   int btnMode = digitalRead(BTN_MODE);
   if (btnMode == HIGH) {
@@ -293,13 +295,13 @@ void setColorLed(CONTAINCE_VALUE leds[]) {
         colorLeds[j] = CRGB(0, 0, 0);
         break;
       case CV_MINUTE:
-        colorLeds[j] = CRGB(0, 0, 255);
+        colorLeds[j] = CRGB(0, 0, gBright);
         break;
       case CV_HOUR:
-        colorLeds[j] = CRGB(255, 0, 0);
+        colorLeds[j] = CRGB(gBright, 0, 0);
         break;
       case CV_HOUR_WITH_MINUTE:
-        colorLeds[j] = CRGB(0, 255, 0);
+        colorLeds[j] = CRGB(0, gBright, 0);
         break;
       default:
         colorLeds[j] = CRGB(0, 0, 0);
@@ -394,4 +396,11 @@ void minuteUp() {
 
 void schemeUp() {
 
+}
+
+void autoLight(const uint8_t hour, const uint8_t minute) {
+  gBright = 255;
+  int lowBright = 64;
+  if (hour < 6 || hour >= 23)
+    gBright = lowBright;
 }
